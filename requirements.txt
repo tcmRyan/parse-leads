@@ -1,0 +1,9 @@
+gunicorn
+flask
+flask-sqlalchemy
+flask-admin
+flask-security
+Flask-Migrate
+Flask-Script
+psycopg2
+bcrypt
