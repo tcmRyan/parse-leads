@@ -5,15 +5,18 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin import helpers as admin_helpers
 from flask_security import Security, SQLAlchemyUserDatastore
+from zcrmsdk import ZCRMRestClient
 
-from webapp.admin_model_view import AdminModelView, ParseAdminIndexView
+
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
+zoho_client = ZCRMRestClient.initialize()
 
-# Need import
+# Imports needed for Admin view but after app init
+from webapp.admin_model_view import AdminModelView, ParseAdminIndexView, SettingsView
 from webapp.models import Email, Lead, User, Role
 admin = Admin(app,
               name='parseLeads',
@@ -26,6 +29,7 @@ admin.add_view(AdminModelView(User, db.session))
 admin.add_view(AdminModelView(Role, db.session))
 admin.add_view(AdminModelView(Lead, db.session))
 admin.add_view(AdminModelView(Email, db.session))
+admin.add_view(SettingsView(name='Settings'))
 
 # Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)

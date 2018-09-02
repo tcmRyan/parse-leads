@@ -1,0 +1,31 @@
+{% extends 'master_admin.html' %}
+{% block access_control %}
+{% if current_user.is_authenticated %}
+{% endif %}
+{% endblock %}
+{% block body %}
+<div>
+<hr>
+    <form method="post" action="">
+        {{ form.csrf }}
+        Initialize the instance to interact with ZohoCRM
+        <div class="input text">
+            {{form.grant.label}}{{form.grant}}
+        </div>
+        <div>
+            <input type="submit" value="Submit" />
+        </div>
+    </form>
+    <ul id="ZOAuthTest">
+        {% if zmodules %}
+        Listing Modules to validate connection
+        {% endif %}
+        {% for module in zmodules %}
+            <li>{{module.module_name}}</li>
+        {% endfor %}
+    </ul>
+    <a href="{{zcrm_auth_url}}">Authorize ZCRM</a>
+
+<hr>
+</div>
+{% endblock %}

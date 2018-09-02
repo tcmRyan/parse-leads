@@ -1,10 +1,10 @@
-from flask import request, redirect, url_for
+from flask import request, redirect, url_for, render_template
 from flask_security import login_required
-from webapp import app, db
-import email
-from email.policy import SMTP
+from zcrmsdk import ZCRMRestClient, ZohoOAuth
 
-from webapp.models import Lead, Email
+from webapp import app, db
+from webapp.parse import save_lead
+from webapp.models import Email
 
 
 @app.route('/')
@@ -16,8 +16,8 @@ def index():
 @app.route('/incoming-messages', methods=['GET', 'POST'])
 def incoming_messages():
     data = request.get_json()
-    date_received = data['headers']['date']
-    received_from = data['envelope']['from']
+    date_received = data['headers']['Date']
+    received_from = data['headers']['From']
     message_meta = Email(
         date_received=date_received,
         received_from=received_from,
@@ -26,42 +26,26 @@ def incoming_messages():
     db.session.add(message_meta)
     db.session.commit()
 
-    raw = email.message_from_string(data['plain'], policy=SMTP)
+    save_lead(data)
 
-    lead_info = {}
-    for part in raw.walk():
-        info = find_and_update(part)
-        if info:
-            lead_info.update(info)
-
-    lead = Lead(
-        first_name=lead_info['first_name'],
-        last_name=lead_info['last_name'],
-        company=lead_info['company'],
-        source=lead_info['source'],
-        email=lead_info['email'],
-        phone=lead_info['phone'],
-        comments=lead_info['comments']
-    )
-    db.session.add(lead)
     message_meta.success = True
     db.session.add(message_meta)
     db.session.commit()
     return 'OK'
 
 
-def find_and_update(line):
-    for key in template_map.keys():
-        if key in line:
-            return {template_map[key]: line.lspilt(key)[-1]}
+@app.route('/oauth2callback', methods=['GET'])
+def zcrm_oauth_callback():
+    grant_token = request.args.get('code')
+    ZCRMRestClient.initialize()
+    oauth_client = ZohoOAuth.get_client_instance()
+    oauth_client.generate_access_token(grant_token)
+    return redirect(url_for('settingsview.index', zcrm=True))
 
 
-template_map = {
-    'First Name: ': 'first_name',
-    'Last Name: ': 'last_name',
-    'Company Name: ': 'company',
-    'Source: ': 'source',
-    'Primary Email: ': 'email',
-    'Primary Phone: ': 'phone',
-    'Comments: ': 'comments'
-}
+@app.route('/config')
+def config():
+    tunnel = app.config.get('BASE_URL')
+    return render_template('config.html', tunnel=tunnel)
+
+

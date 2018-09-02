@@ -1,5 +1,6 @@
 version: '2'
 
+# Some Services to make local development easy
 services:
   # External Services
   postgres:
@@ -7,3 +8,9 @@ services:
     ports:
       - "5434:5432"
     restart: always
+
+  ngrok:
+    image: "wernight/ngrok"
+    ports:
+      - "4040:4040"
+    command: "ngrok http localhost:5000"

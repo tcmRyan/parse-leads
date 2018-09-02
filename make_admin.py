@@ -1,8 +1,5 @@
-from webapp.models import User, Role
+from webapp.models import User
 from webapp import db, user_datastore as user_ds
-# from flask_security import SQLAlchemyUserDatastore
-#
-# user_ds = SQLAlchemyUserDatastore(db, User, Role)
 
 
 def create_role_and_admin():
@@ -21,8 +18,6 @@ def create_role_and_admin():
 
 
 if __name__ == '__main__':
-    users = User.query.limit(2).all()
+    users = User.query.limit(1).all()
     if not users:
         create_role_and_admin()
-    create_role_and_admin()
-
