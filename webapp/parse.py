@@ -40,3 +40,5 @@ def save_lead(msg):
         comments=lead_info.get('comments')
     )
     db.session.add(lead)
+
+    return lead

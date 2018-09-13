@@ -1,6 +1,7 @@
 from flask import request, redirect, url_for, render_template
 from flask_security import login_required
-from zcrmsdk import ZCRMRestClient, ZohoOAuth
+from flask_dance.contrib.zoho import zoho
+from webapp.vendors import create_vendor_lead
 
 from webapp import app, db
 from webapp.parse import save_lead
@@ -8,9 +9,14 @@ from webapp.models import Email
 
 
 @app.route('/')
-@login_required
 def index():
-    return redirect(url_for('admin.index'))
+    if not zoho.authorized:
+        return redirect(url_for(('zoho.login')))
+    resp = zoho.get('/crm/v2/users', params={'type': 'CurrentUser'})
+    data = resp.json()
+    user = data['users'][0]['full_name']
+    # return redirect(url_for('admin.index'))
+    return 'hi {}'.format(user)
 
 
 @app.route('/incoming-messages', methods=['GET', 'POST'])
@@ -26,21 +32,13 @@ def incoming_messages():
     db.session.add(message_meta)
     db.session.commit()
 
-    save_lead(data)
+    lead = save_lead(data)
+    resp = create_vendor_lead(lead)
 
-    message_meta.success = True
+    message_meta.success = True if resp.status == '200' else False
     db.session.add(message_meta)
     db.session.commit()
     return 'OK'
-
-
-@app.route('/oauth2callback', methods=['GET'])
-def zcrm_oauth_callback():
-    grant_token = request.args.get('code')
-    ZCRMRestClient.initialize()
-    oauth_client = ZohoOAuth.get_client_instance()
-    oauth_client.generate_access_token(grant_token)
-    return redirect(url_for('settingsview.index', zcrm=True))
 
 
 @app.route('/config')

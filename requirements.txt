@@ -7,5 +7,5 @@ Flask-Migrate
 Flask-Script
 psycopg2
 bcrypt
-zcrmsdk
 requests
+-e /Users/ryanschaffer/PycharmProjects/flask-dance@zoho

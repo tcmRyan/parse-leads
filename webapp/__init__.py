@@ -1,19 +1,25 @@
 import os
 
 from flask import Flask, url_for
+from werkzeug.contrib.fixers import ProxyFix
 from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin import helpers as admin_helpers
 from flask_security import Security, SQLAlchemyUserDatastore
-from zcrmsdk import ZCRMRestClient
-
-
+from flask_dance.contrib.zoho import make_zoho_blueprint
 
 app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+app.wsgi_app = ProxyFix(app.wsgi_app)
 db = SQLAlchemy(app)
-zoho_client = ZCRMRestClient.initialize()
+zoho_bp = make_zoho_blueprint(
+    offline=True,
+    scope="ZohoCRM.modules.ALL,ZohoCRM.settings.all,ZohoCRM.org.all,ZohoCRM.users.all",
+
+)
+app.register_blueprint(zoho_bp, url_prefix='/login')
+
 
 # Imports needed for Admin view but after app init
 from webapp.admin_model_view import AdminModelView, ParseAdminIndexView, SettingsView

@@ -31,8 +31,8 @@ class Config(object):
     SECRET_KEY = os.environ['SECRET_KEY']
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SECURITY_PASSWORD_SALT = os.environ['SECURITY_PASSWORD_SALT']
-    ZCRM_CLIENT_ID = os.environ['ZCRM_CLIENT_ID']
-    ZCRM_CLIENT_SECRET = os.environ['ZCRM_CLIENT_SECRET']
+    ZOHO_OAUTH_CLIENT_ID = os.environ['ZOHO_OAUTH_CLIENT_ID']
+    ZOHO_OAUTH_CLIENT_SECRET = os.environ['ZOHO_OAUTH_CLIENT_SECRET']
 
 
 class ProdConfig(Config):
@@ -43,4 +43,4 @@ class ProdConfig(Config):
 class DevConfig(Config):
     DEBUG = True
     # BASE_URL = ngrok_url()
-    BASE_URL = 'http://520ea6dc.ngrok.io'
+    BASE_URL = 'https://e3255606.ngrok.io'

@@ -162,4 +162,4 @@ fabric.properties
 .idea/misc.xml
 .idea/modules.xml
 
-.env
+*.env
